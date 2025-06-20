@@ -1,51 +1,68 @@
-﻿
 require('dotenv').config();
-var cors = require('cors');
-let fs 			  = require('fs');
-//let https     	  = require('https')
-//let privateKey    = fs.readFileSync('./ssl/b86club.key', 'utf8');
-//let certificate   = fs.readFileSync('./ssl/b86club.pem', 'utf8');
-//let credentials   = {key: privateKey, cert: certificate};
-let express       = require('express');
-let app           = express();
-//let server 	  	  = https.createServer(credentials, app);
+const cors = require('cors');
+const express = require('express');
+const mongoose = require('mongoose');
+require('mongoose-long')(mongoose);
+const bodyParser = require('body-parser');
+const expressWs = require('express-ws');
+const morgan = require('morgan');
+const fs = require('fs');
+
+// Khởi tạo express
+const app = express();
+expressWs(app);
+
+// CORS
 app.use(cors({
     origin: '*',
     optionsSuccessStatus: 200
 }));
-let port       = process.env.PORT || 3000;
-let expressWs  = require('express-ws')(app);
-let bodyParser = require('body-parser');
-var morgan = require('morgan');
-// Setting & Connect to the Database
-let configDB = require('./config/database');
-let mongoose = require('mongoose');
-require('mongoose-long')(mongoose); // INT 64bit
-mongoose.set('useFindAndModify', false);
-mongoose.set('useCreateIndex',   true);
-mongoose.connect(configDB.url, configDB.options); // kết nối tới database
-// cấu hình tài khoản admin mặc định và các dữ liệu mặc định
-require('./config/admin');
-// đọc dữ liệu from
+
+// Body parser
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended:false}));
-//app.use(morgan('combined'));
-app.set('view engine', 'ejs'); // chỉ định view engine là ejs
-app.set('views', './views');   // chỉ định thư mục view
-// Serve static html, js, css, and image files from the 'public' directory
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// View engine
+app.set('view engine', 'ejs');
+app.set('views', './views');
 app.use(express.static('public'));
-// server socket
-let redT = expressWs.getWss();
-process.redT = redT;
-global['redT'] = redT;
-global['userOnline'] = 0;
-require('./app/Helpers/socketUser')(redT); // Add function socket
-require('./routerHttp')(app, redT);   // load các routes HTTP
-require('./routerCMS')(app, redT);	//load routes CMS
-require('./routerSocket')(app, redT); // load các routes WebSocket
-require('./app/Cron/taixiu')(redT);   // Chạy game Tài Xỉu
-require('./app/Cron/baucua')(redT);   // Chạy game Bầu Cua
-require('./config/cron')();
-app.listen(port, function() {
-    console.log("Server listen on port ", port);
-});
+
+// Kết nối database
+const configDB = require('./config/database');
+mongoose.set('strictQuery', true);
+mongoose.connect(configDB.url, configDB.options)
+    .then(() => {
+        console.log("✅ Kết nối MongoDB thành công");
+        // Chỉ chạy các service khi MongoDB đã kết nối thành công
+        initServices();
+    })
+    .catch(err => {
+        console.error("❌ Lỗi kết nối MongoDB:", err.message);
+    });
+
+// Khi MongoDB kết nối thành công, mới load toàn bộ hệ thống
+function initServices() {
+    // Cấu hình dữ liệu mặc định
+    require('./config/admin')();
+
+    // Khởi tạo websocket
+    const redT = app.wsInstance.getWss();
+    process.redT = redT;
+    global['redT'] = redT;
+    global['userOnline'] = 0;
+
+    // Khởi tạo socket & routes
+    require('./app/Helpers/socketUser')(redT);
+    require('./routerHttp')(app, redT);
+    require('./routerCMS')(app, redT);
+    require('./routerSocket')(app, redT);
+    require('./app/Cron/taixiu')(redT);
+    require('./app/Cron/baucua')(redT);
+    require('./config/cron')();
+
+    // Server listen
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => {
+        console.log("✅ Server đang lắng nghe tại cổng:", port);
+    });
+}
