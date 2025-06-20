@@ -10,7 +10,9 @@ const fs = require('fs');
 
 // Khởi tạo express
 const app = express();
-expressWs(app);
+
+// Khởi tạo WebSocket cho app
+const wsInstance = expressWs(app);
 
 // CORS
 app.use(cors({
@@ -46,7 +48,7 @@ function initServices() {
     require('./config/admin')();
 
     // Khởi tạo websocket
-    const redT = app.wsInstance.getWss();
+    const redT = wsInstance.getWss();  // đây mới đúng
     process.redT = redT;
     global['redT'] = redT;
     global['userOnline'] = 0;
@@ -63,6 +65,6 @@ function initServices() {
     // Server listen
     const port = process.env.PORT || 3000;
     app.listen(port, () => {
-        console.log("✅ Server đang lắng nghe tại cổng:", port);
+        console.log("✅ Server đang chạy tại cổng:", port);
     });
 }
