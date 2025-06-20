@@ -45,14 +45,13 @@ let topUser = function(){
 					resolve({name:!!result2 ? result2.name : ''});
 				})
 			})
-		}))
+		})
 		.then(function(result){
 			 _tops = result;
 			 io.top = _tops;
 			 
 		});
-	});
-}
+	};
 let botchatRun = function(){
 	let time = 0;
 	let timeChat = 0;
