@@ -30,7 +30,16 @@ function getIndex(arr,name){
 }
 let topUser = function(){
 	TaiXiu_User.find({'totall':{$gt:0}}, 'totall uid', {sort:{totall:-1}, limit:10}, function(err, results) {
-		Promise.all(results.map(function(obj){
+		if (Array.isArray(results) && results.length) {
+  Promise.all(results.map(function(obj){
+    ...
+  }))
+  .then(function(result){
+    _tops = result;
+    io.top = _tops;
+  });
+}
+
 			return new Promise(function(resolve, reject) {
 				UserInfo.findOne({'id': obj.uid}, function(error, result2){
 					resolve({name:!!result2 ? result2.name : ''});
@@ -109,12 +118,15 @@ let init = function(obj){
 	playGame();
 	botchatRun();
 }
-
+let init = function(obj){
+	io = obj;
+	io.listBot = [];
 TXPhien.findOne({}, 'id', {sort:{'id':-1}}, function(err, last) {
 	if (!!last){
 		io.TaiXiu_phien = last.id+1;
 	}
 })
+		};
 
 let truChietKhau = function(bet, phe){
 	return bet-Math.ceil(bet*phe/100);
