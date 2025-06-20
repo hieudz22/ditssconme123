@@ -32,7 +32,7 @@ let topUser = function(){
 	TaiXiu_User.find({'totall':{$gt:0}}, 'totall uid', {sort:{totall:-1}, limit:10}, function(err, results) {
 		if (Array.isArray(results) && results.length) {
   Promise.all(results.map(function(obj){
-    ...
+
   }))
   .then(function(result){
     _tops = result;
