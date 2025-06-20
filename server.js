@@ -37,7 +37,6 @@ app.use(express.static('public'));
 // server socket
 let redT = expressWs.getWss();
 process.redT = redT;
-redT.telegram = TelegramBot;
 global['redT'] = redT;
 global['userOnline'] = 0;
 require('./app/Helpers/socketUser')(redT); // Add function socket
