@@ -1,12 +1,7 @@
-
 module.exports = {
-	'url': process.env.DATABASE_URL,
-	'options': {
-		//'user':   'kvcpro',
-		//'pass':   'Minhhoang',
-		'dbName': 'RongVang88fun', // red
-		'useNewUrlParser': true,
-		'useUnifiedTopology': true,
-		//'autoIndex':       false,
-	},
+    url: 'mongodb+srv://tungtung:admindeptrai@ac-zlgw7r1.xsrqoxt.mongodb.net/RedVip?retryWrites=true&w=majority',
+    options: {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    }
 };
